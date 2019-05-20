@@ -210,7 +210,7 @@ var width = $("#map").width(),
 	});
 
 
-	d3.csv("data/BIN_Lat_Lon_Display.csv",function(data){
+	d3.csv("https://raw.githubusercontent.com/NYCDOB/AHVs/gh-pages/data/BIN_Lat_Lon_Display.csv",function(data){
 		data.forEach(function(d){
 				d.latLng = [+d.Latitude,+d.Longitude];
 				d.bin = [d.BIN];				
