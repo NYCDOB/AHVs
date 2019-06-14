@@ -13,7 +13,8 @@
 .heading {
 	font-size: 26px;
 	font-weight: bold;
-	color: #BF0000;	
+	color: #3F4B58;
+	<!-- color: #BF0000;	 -->
 	font-family: 'Open Sans', sans-serif;
 	font-family: 'Roboto', sans-serif;
 }
@@ -54,7 +55,7 @@ div.tooltip {
 #map-container{
 	height: 900px;
 	width: 100%;
-	border: 3px solid black;
+	border: 3px solid #3F4B58;
 	position: relative;
 	display: block;
 }
@@ -69,12 +70,13 @@ div.tooltip {
 #table-container{
 	height: 900px;
 	width: 100%;
-	border: 3px solid black;
+	border: 3px solid #3F4B58;
 	display: block;
 	overflow-y: auto;
 	padding: 10px;
 	font-size: 18px;
 	font-style: italic;
+	color: #3F4B58;
 }
 #img{
 	float: left;
@@ -87,16 +89,78 @@ div.tooltip {
 	fill: #BF0000;
 	fill-opacity: .7;
 }
+.renewal_single_pnt{
+	fill: #375E97;
 
-td.details-control {
-	background: url('https://datatables.net/examples/resources/details_open.png') no-repeat center center;
-	cursor: pointer;
 }
-tr.shown td.details-control {
-	background: url('https://datatables.net/examples/resources/details_close.png') no-repeat center center;
-	cursor: pointer;
-}
+.renewal_multi_pnt{
+	fill: #d84c00;
 
+}
+.initial_single_pnt{
+	fill: #95B3D7;
+	fill-opacity: .9;
+
+}
+.initial_multi_pnt{
+	fill: #F79646;
+	fill-opacity: .9;
+
+}
+.ui {
+	top: 10px;
+	left: 50px;
+	padding: 8px;
+	position: absolute;
+	background-color: #fff;
+	border: 2px solid #707070;
+	border-radius: 7px;
+	width: 300px;
+}
+.legend_label{
+	padding-left: 12px;
+	font-size: 12px;
+	display: inline-block;
+}
+.initalFiling_Label{
+	font-size: 15px;
+}
+.point_singleFilingInitial {
+  position: relative;
+  top: 3px;
+  height: 15px;
+  width: 15px;
+  background-color: #95B3D7;
+  border-radius: 50%;
+  display: inline-block;
+}
+.point_multiFilingInitial {
+  position: relative;
+  top: 3px;
+  height: 15px;
+  width: 15px;
+  background-color: #F79646;
+  border-radius: 50%;
+  display: inline-block;
+}
+.point_singleFilingMulti {
+  position: relative;
+  top: 3px;
+  height: 8px;
+  width: 8px;
+  background-color: #375E97;
+  border-radius: 50%;
+  display: inline-block;
+}
+.point_multiFilingMulti {
+  position: relative;
+  top: 3px;
+  height: 8px;
+  width: 8px;
+  background-color: #d84c00;
+  border-radius: 50%;
+  display: inline-block;
+}
 </style>
 <body class="application">
 <div class="row">
@@ -108,7 +172,7 @@ tr.shown td.details-control {
 	<div class="col-md-6">
 		
 		<div class="dropdown">
-			<td>SELECT FIRST DATE OF AHV:
+			<td>SELECT DATE TO FILTER MAP:
 			<select id="dropdownDates" style="height: auto;max-height: 50px; overflow-x: hidden;">
 			</select>
 			</td>
@@ -127,7 +191,25 @@ tr.shown td.details-control {
 		
 		<div class="col-md-9">
 		  <div class="chart-stage" id="map-container">
-			<div id="map"></div>
+			<div id="map">
+				<div id="ui-container" class="ui" style="z-index: 401">				
+						  <h4>LEGEND</h4>	
+						  <span style="display:inline-block; padding:0px; margin:0px; height:13px; width:13px; overflow:hidden"><input type="checkbox" style="padding:0px;margin:0px" name="initial_filing" class="regular-checkbox" value="initial_filing" id="initial_filing" checked="true"/></span>
+							<label for="initial_filing"></label><span class="initalFiling_Label"><u>INITIAL FILINGS</u></span><span class="initalFiling_Label" id="initial_txt"></span>	
+							<br/>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="point_singleFilingInitial"></span><span class="legend_label">SINGLE REFERENCE NUMBER</span><span id="initial_single_txt"></span>	
+						  <br/>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="point_multiFilingInitial"></span><span class="legend_label">MULTIPLE REFERENCE NUMBERS</span><span id="initial_multi_txt"></span>
+						  <br/>
+						  <span style="display:inline-block; padding:0px; margin:0px; height:13px; width:13px; overflow:hidden"><input type="checkbox" style="padding:0px;margin:0px" name="renewal_filing" class="regular-checkbox" value="renewal_filing" id="renewal_filing" checked="true"/></span>
+							<label for="initial_filing"></label><span class="initalFiling_Label"><u>RENEWAL FILINGS</u></span><span class="initalFiling_Label" id="renewal_txt"></span>	
+							<br/>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="point_singleFilingMulti"></span><span class="legend_label">SINGLE REFERENCE NUMBER</span><span id="renewal_single_txt"></span>	
+						  <br/>
+						  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="point_multiFilingMulti"></span><span class="legend_label">MULTIPLE REFERENCE NUMBERS</span><span id="renewal_multi_txt"></span>
+						  <br/>						
+				</div>
+			</div>
 		  </div>
 		</div>
 </div>
@@ -171,50 +253,84 @@ var tooltip = d3.select('body').append('div')
 var width = $("#map").width(),
 	height = $("#map").height(),
 	points = [],
+	initial_cnt,
+	initial_single_cnt,
+	initial_multi_cnt,
+	renewal_cnt,
+	renewal_single_cnt,
+	renewal_multi_cnt,
 	table_map = [],
 	filteredData,	
 	selectedDate,
 	sel,
 	latLngs = [];
 
-	
+	var format = d3.time.format("%-m/%-d/%Y").parse;
 	var pointsOverlay = L.d3SvgOverlay(function(sel,proj){
-	var pointsUpd = sel.selectAll('circle').data(points);	
-	pointsUpd.enter()
-		.append('circle')
-		.attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
-		.attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
-		.attr('class', function(d){
-			return "point";
-		})
+		
+		var pointsUpd = sel.selectAll('circle').data(points);	
+		pointsUpd.enter()
+			.append('circle')
+			.attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
+			.attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
+			.attr('class', function(d){
+				if ([d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] < 1){
+					return "initial_single_pnt";
+				}  else if ([d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] > 0){ 
+					return "initial_multi_pnt";
+				}  
+				else if ([d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] < 1){ 
+					return "renewal_single_pnt";
+				}	
+				else if ([d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] > 0){ 
+					return "renewal_multi_pnt";	
+				}
+				//return "point";
+			})
 
-		.on('click', function(d){
-			if(d3.select(this).style("fill-opacity") != 0){
-				getReport(d.bin);
-			}
-		})
-		.on("mouseover", function(d, i){
-			if(d3.select(this).style("fill-opacity") != 0){
-				tooltip.transition().duration(0); 
-				$(this).attr("style", "cursor: pointer; fill: #eef442; fill-opacity: 1;");
-			}
-		})
-		.on("mouseout", function(d, i){	
-			if(d3.select(this).style("fill-opacity") != 0){
-				$(this).attr("style", "stroke-width: 0px; fill-opacity: .7;");
-				return tooltip.transition().delay(500).style("visibility", "hidden"); 
-			}
-		});
-		pointsUpd.attr('r', 4 / proj.scale);
-
+				
+			.on('click', function(d){
+				if(d3.select(this).style("fill-opacity") != 0){
+					getReport(d.bin);
+				}
+			})
+			.on("mouseover", function(d, i){
+				if(d3.select(this).style("fill-opacity") != 0){
+					tooltip.transition().duration(0); 
+					$(this).attr("style", "cursor: pointer; fill: #eef442; fill-opacity: 1;");
+				}
+			})
+			.on("mouseout", function(d, i){	
+				if(d3.select(this).style("fill-opacity") != 0){
+					$(this).attr("style", "stroke-width: 0px; fill-opacity: .7;");
+					return tooltip.transition().delay(500).style("visibility", "hidden"); 
+				}
+			});
+			//pointsUpd.attr('r', 4 / proj.scale);
+			pointsUpd.attr('r', function(d){
+				if ([d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] < 1){
+					return 5 / proj.scale;
+				}  else if ([d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] > 0){ 
+					return 5 / proj.scale;
+				}  
+				else if ([d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] < 1){ 
+					return 3 / proj.scale;
+				}	
+				else if ([d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] > 0){ 
+					return 3 / proj.scale;	
+				}				
+			});
+			
 	});
 
 
-	d3.csv("https://raw.githubusercontent.com/NYCDOB/AHVs/gh-pages/data/BIN_Lat_Lon_Display.csv",function(data){
+	d3.csv("data/BIN_Lat_Lon_Display2.csv",function(data){
 		data.forEach(function(d){
 				d.latLng = [+d.Latitude,+d.Longitude];
 				d.bin = [d.BIN];				
 				d.date = d["First Day"];
+				d.initial = [d.File_Type_Initial];
+				d.multiRef = [d.Mult_Ref_Numbers];
 		});
 
 
@@ -224,7 +340,7 @@ var width = $("#map").width(),
 			.sortKeys(d3.ascending)
 			.map(data, d3.map)
 			.keys();
-		console.log(uniqueDates);
+		console.log(uniqueDates.length);
 		
 		var menu = d3.select("#dropdownDates");
             menu.selectAll("option")
@@ -240,39 +356,101 @@ var width = $("#map").width(),
 			selectedDate = d3.select(this).property('value');
 			filterMap(selectedDate);
 			console.log(selectedDate);
+			initialCheckbox.checked = true;
+			renewalCheckbox.checked = true;
 		});
 
-		var firstDate = d3.nest()
-			.key(function(d){return d["First Day"]})
-			.sortKeys(d3.ascending)
-			.map(data, d3.map)
-			.keys();
 		
-		
-
 		function filterMap(selectedDate){
 			filteredData = data.filter(function(d){
 				return d.date == selectedDate;
 			})
-			console.log(filteredData);
+
+			console.log(filteredData.length);
+			
+			
+			latLngs = filteredData.map(function(d){				
+				return d.latLng;
+			});			
+			
+			//UPDATE COUNTS IN LEGEND
+			initial_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] > 0;
+			}).length;
+			$('#initial_txt').text(" ("+initial_cnt+")");
+			console.log(initial_cnt);
+			
+			initial_single_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] < 1;
+			}).length;
+			$('#initial_single_txt').text(" ("+initial_single_cnt+")");
+			console.log(initial_single_cnt);
+			
+			initial_multi_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] > 0 && [d.Mult_Ref_Numbers] > 0;
+			}).length;
+			$('#initial_multi_txt').text(" ("+initial_multi_cnt+")");
+			console.log(initial_multi_cnt);
+			
+			renewal_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] < 1;
+			}).length;
+			$('#renewal_txt').text(" ("+renewal_cnt+")");
+			console.log(renewal_cnt);
+			
+			renewal_single_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] < 1;
+			}).length;
+			$('#renewal_single_txt').text(" ("+renewal_single_cnt+")");
+			console.log(renewal_single_cnt);
+			
+			renewal_multi_cnt = filteredData.filter(function(d){
+				return [d.File_Type_Initial] < 1 && [d.Mult_Ref_Numbers] > 0;
+			}).length;
+			$('#renewal_multi_txt').text(" ("+renewal_multi_cnt+")");
+			console.log(renewal_single_cnt);
+			
+			
 			points = filteredData.map(function(d){
 				return d;
 			});
 			map.removeLayer(pointsOverlay);
-			pointsOverlay.addTo(map);
+			pointsOverlay.addTo(map);	
+			zoom(latLngs);
 		}
 
+			
 		var x = document.getElementById("dropdownDates").selectedIndex;	
 		sel = document.getElementsByTagName("option")[x].value;
 		filterMap(sel);
+		
+		
 		
 	});
 	
 
 	function getReport(bin){
 		console.log(bin);
+		
+		if(bin < 2000000){
+			$("#chart-01").show();
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Manhattan/AHV_" + bin + ".html";
+		} else if(bin >= 2000000 && bin < 3000000){
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Bronx/AHV_" + bin + ".html";
+		} else if(bin >= 3000000 && bin < 4000000){
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Brooklyn/AHV_" + bin + ".html";
+		} else if(bin >= 4000000 && bin < 5000000){
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Queens/AHV_" + bin + ".html";
+		} else if(bin >= 5000000){
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/StatenIsland/AHV_" + bin + ".html";
+		}
+		
+		
+		/*
 		$("#chart-01").show();
-		document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/AHV_" + bin + ".html";
+		//document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/data/AHV_" + bin + ".html";
+		document.getElementById("ahv_report").src = "data/AHV_Reports/AHV_" + bin + ".html";
+		*/
 	}
 
 	function highlightPoint(layerID){
@@ -292,11 +470,52 @@ var width = $("#map").width(),
 		map.setView([40.706813, -73.997629], 15);
 	}
 	
+	function zoom(latLngs){
+		if (latLngs === undefined || latLngs == 0){
+			window.alert("No results found. Please adjust query criteria");
+		}
+		else
+		{
+			polyline = L.polyline(latLngs,{opacity:0}).addTo(map);
+			map.fitBounds(polyline.getBounds());
+			map.removeLayer(polyline);
+		}
+	};
 	
 	map.on('resize', function(){
 		map.invalidateSize();		
 	});
-
+	
+	var initialCheckbox = document.querySelector('input[id="initial_filing"]');
+		renewalCheckbox = document.querySelector('input[id="renewal_filing"]');
+		
+	initialCheckbox.onchange = function(){
+			if(this.checked){
+				d3.selectAll(".initial_single_pnt,.initial_multi_pnt").filter(function(d) {
+					return ([d.File_Type_Initial] > 0);
+				})
+				.style("display", "block");	
+			} else {
+				d3.selectAll(".initial_single_pnt,.initial_multi_pnt").filter(function(d) {
+					return ([d.File_Type_Initial] > 0);
+				})
+				.style("display", "none");						
+			}
+	};
+	
+	renewalCheckbox.onchange = function(){
+			if(this.checked){
+				d3.selectAll(".renewal_single_pnt,.renewal_multi_pnt").filter(function(d) {
+					return ([d.File_Type_Initial] < 1);
+				})
+				.style("display", "block");	
+			} else {
+				d3.selectAll(".renewal_single_pnt,.renewal_multi_pnt").filter(function(d) {
+					return ([d.File_Type_Initial] < 1);
+				})
+				.style("display", "none");						
+			}
+	};
 });	
 
 
