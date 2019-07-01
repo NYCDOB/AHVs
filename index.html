@@ -3,6 +3,7 @@
 <head>
   <title>AHVs</title>
   <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+  <meta charset="UTF-8">
   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
   <link href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css' rel='stylesheet' type='text/css'/>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.12/r-2.1.0/se-1.2.0/datatables.min.css">
@@ -34,12 +35,8 @@ body {
 	height: 100%;
 	width: 100%;
 }
-.dropdown{
-	float: right;
-	padding-top: 10px;
-	padding-right: 10px;
-	font-size: 17px;
-}
+
+
 div.tooltip {
 	color: #222;
 	background: #fff;
@@ -125,6 +122,7 @@ div.tooltip {
 .initalFiling_Label{
 	font-size: 15px;
 }
+
 .point_singleFilingInitial {
   position: relative;
   top: 3px;
@@ -161,23 +159,62 @@ div.tooltip {
   border-radius: 50%;
   display: inline-block;
 }
+
+
+/* override Bootstrap's override of search styling; gives us the X to clear the search text ZZZ  CATHY SIMON*/
+input[type="search"]::-webkit-search-decoration,  
+input[type="search"]::-webkit-search-cancel-button {   
+	-webkit-appearance: searchfield-cancel-button;
+	
+}
+
+.modal-body {   /*  ZZZ CATHY SIMON */
+text-align: center;
+color: #44A8DE;
+font-size: 1.5em;
+}
+
+ 
+
+
+
 </style>
 <body class="application">
 <div class="row">
-	<div class="col-md-6">
+	<div class="col-md-3">
 		<div class="heading">
 			AFTER HOURS VARIANCES
 		</div>
 	</div>
-	<div class="col-md-6">
-		
-		<div class="dropdown">
-			<td>SELECT DATE TO FILTER MAP:
-			<select id="dropdownDates" style="height: auto;max-height: 50px; overflow-x: hidden;">
-			</select>
-			</td>
-		</div>
+	
+	
+
+	<div class="col-md-9">
+	
+			<form id="searchBinForm" class="" style="float:right;font-size:1.3em;">   <!--   CATHY SIMON ZZZ -->
+						<label for="">Filter by Date: </label>
+								<select id="dropdownDates" ></select>
+						<span style="padding-right:20px"></span>
+						<label for="binTxtBox" style="">Bin</label>
+								<input id="binTxtBox"  name="binText" type="search"  width="7" pattern="\d{7}" 
+								   title="7-digit Bin" style="width:100px;padding:3px;" autofocus/>
+			</form>
+	
 	</div>
+
+	
+	
+	<!-- 
+	<div class="col-md-9">
+				<label for="">Select Date To Filter Map</label>
+						<select id="dropdownDates" style="height: auto;zzzmax-height: 50px; overflow-x: hidden;"></select>
+				<label for="binTxtBox">Bin</label>
+						<input id="binTxtBox" name="binText" type="search" size="8" maxlength="7" placeholder="7-digit Bin" title="Enter 7 digit Bin"/>
+	</div>
+	-->
+
+	
+	
 </div>
 	
 <div class="row">
@@ -215,11 +252,41 @@ div.tooltip {
 </div>
 
 
+<div class="modal" id="messageModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+		
+				<img src="https://www1.nyc.gov/assets/buildings/images/content/header/logo.png">
+				
+				After Hours Variance
+				
+				
+				
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>		
+		</h3>
+
+      </div>
+      <div class="modal-body">
+        <p>Modal body text goes here.</p>
+      </div>
+      
+      
+    </div>
+  </div>
+</div>
+
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.9/d3.min.js"></script>
 <script src="Leaflet.D3SvgOverlay-master/L.D3SvgOverlay.min.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- removed bootstrap.min.css; it is already referenced in head section above -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/v/dt/dt-1.10.12/r-2.1.0/se-1.2.0/datatables.min.js"></script>
 <script type="text/javascript" src="maxazan-jquery-treegrid-447d662/js/jquery.treegrid.js"></script>
@@ -227,16 +294,16 @@ div.tooltip {
 <script>
  
 $(document).ready(function(){
-	
-	var today = new Date(),
-		dd = today.getDate(),
-		mm = today.getMonth()+1,
-		yyyy = today.getFullYear(),
-		format = d3.time.format("%-m/%-d/%Y").parse;
+
+var today = new Date(),
+	dd = today.getDate(),
+	mm = today.getMonth()+1,
+	yyyy = today.getFullYear(),
+	format = d3.time.format("%-m/%-d/%Y").parse;
 	today = mm + '/' + dd + '/' + yyyy;	
 	d3.select("#today").html(today);
-	var latlong = [];
-	var selection = [];
+var latlong = [];
+var selection = [];
 	
 var map = L.map('map').setView([40.713312, -73.977407], 11);
 
@@ -332,8 +399,6 @@ var width = $("#map").width(),
 				d.initial = [d.File_Type_Initial];
 				d.multiRef = [d.Mult_Ref_Numbers];
 		});
-
-
 	
 		var uniqueDates = d3.nest()
 			.key(function(d){return d["First Day"]})
@@ -354,18 +419,41 @@ var width = $("#map").width(),
 		
 		d3.select("#dropdownDates").on('change', function(){
 			selectedDate = d3.select(this).property('value');
+			$("#binTxtBox").val("");
 			filterMap(selectedDate);
 			console.log(selectedDate);
 			initialCheckbox.checked = true;
 			renewalCheckbox.checked = true;
 		});
-
 		
-		function filterMap(selectedDate){
-			filteredData = data.filter(function(d){
-				return d.date == selectedDate;
-			})
 
+		d3.select("#searchBinForm").on('submit', function(){   /* enables [enter] key for bin search.   CATHY SIMON ZZZ  */
+				//need to consolidate with #dropdownDates change
+			event.preventDefault();
+			selectedDate = d3.select("#dropdownDates").property('value');
+			searchBinValue = d3.select("#binTxtBox").property('value');
+			filterMap(selectedDate,searchBinValue );
+			initialCheckbox.checked = true;
+			renewalCheckbox.checked = true;
+		});
+		
+
+		d3.select("#binTxtBox").on('input', function(e){ /* if bin field is cleared, reset map to selected date.   CATHY SIMON ZZZ  */
+				var $input = $(this),
+				oldValue = $input.val();
+				if (oldValue === ''){
+					dateVal=document.getElementById('dropdownDates').value;
+					filterMap(dateVal);
+				} 
+		});
+
+
+		function filterMap(selectedDate, searchBin=null){
+
+			filteredData = data.filter(function(d){
+				//return d.date == selectedDate;  
+				return (d.date == selectedDate && ((searchBin) ? d.bin == searchBin: true )); /*filter on date and bin.  CATHY SIMON ZZZ  */
+			})
 			console.log(filteredData.length);
 			
 			
@@ -416,23 +504,23 @@ var width = $("#map").width(),
 			});
 			map.removeLayer(pointsOverlay);
 			pointsOverlay.addTo(map);	
-			zoom(latLngs);
-		}
 
-			
+			zoom(latLngs);
+			getReport();
+		};  //end of filterMap()
+		
 		var x = document.getElementById("dropdownDates").selectedIndex;	
 		sel = document.getElementsByTagName("option")[x].value;
 		filterMap(sel);
 		
-		
-		
-	});
+	});  //end of d3 load data
 	
 
-	function getReport(bin){
+	function getReport(bin=null){
 		console.log(bin);
-		
-		if(bin < 2000000){
+		if (!bin) {  //to clear the iframe, call getReport with no arguments. EG when we change the date or bin 
+				document.getElementById("ahv_report").src = "";
+		} else if (bin < 2000000){
 			$("#chart-01").show();
 			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Manhattan/AHV_" + bin + ".html";
 		} else if(bin >= 2000000 && bin < 3000000){
@@ -472,7 +560,11 @@ var width = $("#map").width(),
 	
 	function zoom(latLngs){
 		if (latLngs === undefined || latLngs == 0){
-			window.alert("No results found. Please adjust query criteria");
+			dateVal=document.getElementById('dropdownDates').value;
+			binVal=document.getElementById('binTxtBox').value;
+			var x = document.querySelector(".modal-body p");
+			x.innerHTML = "Bin "+ binVal + " not found for date " + dateVal;
+			$('#messageModal').modal('toggle');
 		}
 		else
 		{
@@ -516,9 +608,11 @@ var width = $("#map").width(),
 				.style("display", "none");						
 			}
 	};
-});	
+	
 
-
+	
+});	  //end of document ready function
+	
 </script>
 </body>
 </html>
