@@ -395,13 +395,13 @@ var width = $("#map").width(),
 		data.forEach(function(d){
 				d.latLng = [+d.Latitude,+d.Longitude];
 				d.bin = [d.BIN];				
-				d.date = d["First Day"];
+				d.date = [d.D_DATE];
 				d.initial = [d.File_Type_Initial];
 				d.multiRef = [d.Mult_Ref_Numbers];
 		});
 	
 		var uniqueDates = d3.nest()
-			.key(function(d){return d["First Day"]})
+			.key(function(d){return [d.D_DATE];})
 			.sortKeys(d3.ascending)
 			.map(data, d3.map)
 			.keys();
