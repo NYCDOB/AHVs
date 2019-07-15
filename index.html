@@ -522,15 +522,15 @@ var width = $("#map").width(),
 		if (!bin) {  //to clear the iframe, call getReport with no arguments. EG when we change the date or bin 
 				document.getElementById("ahv_report").src = "";
 		} else if (bin < 2000000){
-			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Manhattan/AHV_" + bin + ".html";
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_HTML_Reports/Manhattan/AHV_" + bin + ".html";
 		} else if(bin >= 2000000 && bin < 3000000){
-			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Bronx/AHV_" + bin + ".html";
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_HTML_Reports/Bronx/AHV_" + bin + ".html";
 		} else if(bin >= 3000000 && bin < 4000000){
-			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Brooklyn/AHV_" + bin + ".html";
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_HTML_Reports/Brooklyn/AHV_" + bin + ".html";
 		} else if(bin >= 4000000 && bin < 5000000){
-			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/Queens/AHV_" + bin + ".html";
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_HTML_Reports/Queens/AHV_" + bin + ".html";
 		} else if(bin >= 5000000){
-			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_Reports/StatenIsland/AHV_" + bin + ".html";
+			document.getElementById("ahv_report").src = "https://nycdob.github.io/AHV_HTML_Reports/StatenIsland/AHV_" + bin + ".html";
 		}
 		
 		
